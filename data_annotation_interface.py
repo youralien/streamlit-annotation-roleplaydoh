@@ -3,35 +3,39 @@ import json
 from data_utils import *
 import os
 
-BUCKET_NAME = 'streamlit-annotation'
+BUCKET_NAME = st.secrets.filenames["bucket_name"]
+STATE = st.secrets.filenames["state_file"]
+EXAMPLES = st.secrets.filenames["example_file"]
+
+print(BUCKET_NAME, STATE, EXAMPLES)
 
 def update_global_dict(keys):
     for key in keys:
         global_dict[key] = st.session_state[key]
     if "logged_in" in st.session_state and st.session_state["logged_in"]:
         # json.dump(global_dict, open(f"data/state_{st.session_state['logged_in']}.json", 'w'))
-        save_dict_to_gcs(BUCKET_NAME, f"data/state_{st.session_state['logged_in']}.json", global_dict)
+        save_dict_to_gcs(BUCKET_NAME, f"data/{STATE}_{st.session_state['logged_in']}.json", global_dict)
     elif "pid" in st.session_state and st.session_state["pid"]:
         client = get_gc_client()
         bucket = client.get_bucket(BUCKET_NAME)
-        if storage.Blob(bucket=bucket, name=f"data/state_{st.session_state['pid']}.json").exists(client):
+        if storage.Blob(bucket=bucket, name=f"data/{STATE}_{st.session_state['pid']}.json").exists(client):
         # if os.path.exists(f"data/state_{st.session_state['pid']}.json"):
             # load
             return
         else:
             # json.dump(global_dict, open(f"data/state_{st.session_state['pid']}.json", 'w'))
-            save_dict_to_gcs(BUCKET_NAME, f"data/state_{st.session_state['pid']}.json", global_dict)
+            save_dict_to_gcs(BUCKET_NAME, f"data/{STATE}_{st.session_state['pid']}.json", global_dict)
     else:
-        save_dict_to_gcs(BUCKET_NAME, f"data/state.json", global_dict)
+        save_dict_to_gcs(BUCKET_NAME, f"data/{STATE}.json", global_dict)
         # json.dump(global_dict, open(f'data/state.json', 'w'))
 
 def example_finished_callback():
     global_dict["current_example_ind"] += 1
     if "logged_in" in st.session_state and st.session_state["logged_in"]:
-        save_dict_to_gcs(BUCKET_NAME, f"data/state_{st.session_state['logged_in']}.json", global_dict)
+        save_dict_to_gcs(BUCKET_NAME, f"data/{STATE}_{st.session_state['logged_in']}.json", global_dict)
         # json.dump(global_dict, open(f"data/state_{st.session_state['logged_in']}.json", 'w'))
     else:
-        save_dict_to_gcs(BUCKET_NAME, f"data/state.json", global_dict)
+        save_dict_to_gcs(BUCKET_NAME, f"data/{STATE}.json", global_dict)
         # json.dump(global_dict, open(f'data/state.json', 'w'))
     js = '''
     <script>
@@ -72,15 +76,15 @@ if __name__ == "__main__":
 
     st.set_page_config(layout="wide")
     if "logged_in" in st.session_state and st.session_state["logged_in"]:
-        global_dict = read_or_create_json_from_gcs(BUCKET_NAME, f"data/state_{st.session_state['logged_in']}.json")
+        global_dict = read_or_create_json_from_gcs(BUCKET_NAME, f"data/{STATE}_{st.session_state['logged_in']}.json")
         # global_dict = json.load(open(f"data/state_{st.session_state['logged_in']}.json", 'r'))
     elif "pid" in st.session_state and st.session_state["pid"]:
-        global_dict = read_or_create_json_from_gcs(BUCKET_NAME, f"data/state_{st.session_state['pid']}.json")
+        global_dict = read_or_create_json_from_gcs(BUCKET_NAME, f"data/{STATE}_{st.session_state['pid']}.json")
         # global_dict = json.load(open(f"data/state_{st.session_state['pid']}.json", 'r'))
     else:
-        global_dict = read_or_create_json_from_gcs(BUCKET_NAME, f"data/state.json")
+        global_dict = read_or_create_json_from_gcs(BUCKET_NAME, f"data/{STATE}.json")
         # global_dict = json.load(open(f'data/state.json', 'r'))
-    testcases = read_or_create_json_from_gcs(BUCKET_NAME, f"data/annotation_test.json")
+    testcases = read_or_create_json_from_gcs(BUCKET_NAME, f"data/{EXAMPLES}.json")
     # testcases = json.load(open('data/errors_test.json', 'r'))
 
     if get_id():

@@ -80,7 +80,7 @@ if __name__ == "__main__":
     else:
         global_dict = read_or_create_json_from_gcs(BUCKET_NAME, f"data/state.json")
         # global_dict = json.load(open(f'data/state.json', 'r'))
-    testcases = read_or_create_json_from_gcs(BUCKET_NAME, f"data/errors_test.json")
+    testcases = read_or_create_json_from_gcs(BUCKET_NAME, f"data/annotation_test.json")
     # testcases = json.load(open('data/errors_test.json', 'r'))
 
     if get_id():

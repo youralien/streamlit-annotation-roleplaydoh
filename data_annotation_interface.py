@@ -58,7 +58,7 @@ def get_id():
             st.session_state["logged_in"] = st.session_state["pid"]
             return True
         else:
-            st.markdown(f'### A Conversational Tool for Training Peer Counselors')
+            st.markdown(f'### Virtual Patient Response Ranking Tool')
             st.warning("""Before you log in and begin annotating data,
                         please ensure you have read and fully understood our research information sheet.
                         :red[**By providing your Prolific ID, you are providing your informed consent**] to participate in this research project.
@@ -87,12 +87,21 @@ if __name__ == "__main__":
         print("global_dict: \n", global_dict)
         example_ind = global_dict["current_example_ind"]
 
+# **Motivation**: We are developing Virtual Patient Chatbots. This AI-powered chatbot roleplays as a patient seeking mental health support; we hope this chatbot can help with the education and training of novice therapists.
         with st.sidebar:
             st.markdown(""" # **Annotation Instructions**
+**Case Data**: You have been provided a description of the patient case, and a conversation between the virtual patient and a therapist. 
 
-- You have been provided a conversation between a simulated patient and a therapist, along with a description of the patient's situation and personality, and a set of principles that the patient response should follow.
-- Rank the patient responses shown based on the set of dimensions provided.
-- The same rank can be assigned to multiple responses, if required. For example, if the first and second response are of similar quality, and both are better than the third response, rank 1 should be assigned to the first two responses, and rank 2 should be assigned to the third response.
+**Annotation Tips:**
+Rank the patient responses shown based on the set of dimensions provided. 
+
+The same rank can be assigned to multiple responses, if required. For example, if the first and second response are of similar quality, and both are better than the third response, the ranking would look like 
+
+| Response  | Rank |
+| --------- | ---- |
+| ResponseA | 1    |
+| ResponseB | 1    |
+| ResponseC | 2    |
 
 """)
 
@@ -108,8 +117,8 @@ if __name__ == "__main__":
                 for key in global_dict:
                     st.session_state[key] = global_dict[key]
 
-                st.markdown(f'### **Response Annotation for Roleplaydoh**')
-                st.info("This is a tool to rank patient responses generated from different models along different dimensions. Please read the conversation, patient description and set of principles for the patient to follow below and rank the provided responses along the required dimensions.")
+                st.markdown(f'### **Virtual Patient Response Ranking Tool**')
+                st.info("This is a tool to rank patient responses generated from different AI models along different dimensions. Please read the conversation, patient description and set of principles for the patient to follow below and rank the provided responses along the required dimensions.")
                 st.subheader(f"Case {example_ind + 1} of {len(global_dict['testcases'])}")
                 example_ind = global_dict["current_example_ind"]
                 testcase = testcases["tests"][global_dict["testcases"][example_ind]]

@@ -3,40 +3,40 @@ import json
 from data_utils import *
 import os
 
-BUCKET_NAME = st.secrets.filenames["bucket_name"]
-STATE = st.secrets.filenames["state_file"]
-EXAMPLES = st.secrets.filenames["example_file"]
-
-print(BUCKET_NAME, STATE, EXAMPLES)
-
-def update_global_dict(keys):
+def update_global_dict(keys, dump = False):
     for key in keys:
         global_dict[key] = st.session_state[key]
+
+    if not dump:
+        return
+
     if "logged_in" in st.session_state and st.session_state["logged_in"]:
         # json.dump(global_dict, open(f"data/state_{st.session_state['logged_in']}.json", 'w'))
-        save_dict_to_gcs(BUCKET_NAME, f"data/{STATE}_{st.session_state['logged_in']}.json", global_dict)
+        save_dict_to_gcs("roleplaydoh", f"data/state_{st.session_state['logged_in']}.json", global_dict)
     elif "pid" in st.session_state and st.session_state["pid"]:
         client = get_gc_client()
-        bucket = client.get_bucket(BUCKET_NAME)
-        if storage.Blob(bucket=bucket, name=f"data/{STATE}_{st.session_state['pid']}.json").exists(client):
+        bucket = client.get_bucket("roleplaydoh")
+        if storage.Blob(bucket=bucket, name=f"data/state_{st.session_state['pid']}.json").exists(client):
         # if os.path.exists(f"data/state_{st.session_state['pid']}.json"):
             # load
             return
         else:
             # json.dump(global_dict, open(f"data/state_{st.session_state['pid']}.json", 'w'))
-            save_dict_to_gcs(BUCKET_NAME, f"data/{STATE}_{st.session_state['pid']}.json", global_dict)
+            save_dict_to_gcs("roleplaydoh", f"data/state_{st.session_state['pid']}.json", global_dict)
     else:
-        save_dict_to_gcs(BUCKET_NAME, f"data/{STATE}.json", global_dict)
+        save_dict_to_gcs("roleplaydoh", f"data/state.json", global_dict)
         # json.dump(global_dict, open(f'data/state.json', 'w'))
 
 def example_finished_callback():
+    for _ in st.session_state:
+        global_dict[_] = st.session_state[_]
     global_dict["current_example_ind"] += 1
     if "logged_in" in st.session_state and st.session_state["logged_in"]:
-        save_dict_to_gcs(BUCKET_NAME, f"data/{STATE}_{st.session_state['logged_in']}.json", global_dict)
-        # json.dump(global_dict, open(f"data/state_{st.session_state['logged_in']}.json", 'w'))
+        save_dict_to_gcs("roleplaydoh", f"data/state_{st.session_state['logged_in']}.json", global_dict)
+        # json.dump(dict(global_dict), open(f"data/state_{st.session_state['logged_in']}.json", 'w'))
     else:
-        save_dict_to_gcs(BUCKET_NAME, f"data/{STATE}.json", global_dict)
-        # json.dump(global_dict, open(f'data/state.json', 'w'))
+        save_dict_to_gcs("roleplaydoh", f"data/state.json", global_dict)
+        # json.dump(dict(global_dict), open(f'data/state.json', 'w'))
     js = '''
     <script>
         function scrollToTop() {
@@ -60,52 +60,57 @@ def get_id():
     with col2:
         if "pid" in st.session_state and st.session_state["pid"]:
             st.session_state["logged_in"] = st.session_state["pid"]
+            st.session_state["reload"] = True
             return True
         else:
-            st.markdown(f'### Virtual Patient Response Ranking Tool')
+            st.markdown(f'### A Conversational Tool for Training Peer Counselors')
             st.warning("""Before you log in and begin annotating data,
                         please ensure you have read and fully understood our research information sheet.
-                        :red[**By providing your Prolific ID, you are providing your informed consent**] to participate in this research project.
+                        :red[**By providing your Email ID, you are providing your informed consent**] to participate in this research project.
                         If you have any questions or concerns about the research or your role in it,
                         please reach out to our team before proceeding.""", icon="⚠️")
-            st.text_input("Prolific ID", key="pid", on_change=update_global_dict, args=[["pid"]])
+            st.text_input("Email ID", key="pid", on_change=update_global_dict, args=[["pid"], "True"])
+            st.session_state["reload"] = True
             return False
 
 
 if __name__ == "__main__":
 
     st.set_page_config(layout="wide")
-    if "logged_in" in st.session_state and st.session_state["logged_in"]:
-        global_dict = read_or_create_json_from_gcs(BUCKET_NAME, f"data/{STATE}_{st.session_state['logged_in']}.json")
-        # global_dict = json.load(open(f"data/state_{st.session_state['logged_in']}.json", 'r'))
-    elif "pid" in st.session_state and st.session_state["pid"]:
-        global_dict = read_or_create_json_from_gcs(BUCKET_NAME, f"data/{STATE}_{st.session_state['pid']}.json")
-        # global_dict = json.load(open(f"data/state_{st.session_state['pid']}.json", 'r'))
+
+    if "reload" not in st.session_state or st.session_state["reload"]:
+        if "logged_in" in st.session_state and st.session_state["logged_in"]:
+            global_dict = read_or_create_json_from_gcs("roleplaydoh", f"data/state_{st.session_state['logged_in']}.json")
+            # global_dict = json.load(open(f"data/state_{st.session_state['logged_in']}.json", 'r'))
+        elif "pid" in st.session_state and st.session_state["pid"]:
+            global_dict = read_or_create_json_from_gcs("roleplaydoh", f"data/state_{st.session_state['pid']}.json")
+            # global_dict = json.load(open(f"data/state_{st.session_state['pid']}.json", 'r'))
+        else:
+            global_dict = read_or_create_json_from_gcs("roleplaydoh", f"data/state.json")
+            # global_dict = json.load(open(f'data/state.json', 'r'))
+        st.session_state["reload"] = False
+        st.session_state["testcases"] = global_dict["testcases"]
+        st.session_state["current_example_ind"] = global_dict["current_example_ind"]
     else:
-        global_dict = read_or_create_json_from_gcs(BUCKET_NAME, f"data/{STATE}.json")
-        # global_dict = json.load(open(f'data/state.json', 'r'))
-    testcases = read_or_create_json_from_gcs(BUCKET_NAME, f"data/{EXAMPLES}.json")
-    # testcases = json.load(open('data/errors_test.json', 'r'))
+        global_dict = st.session_state
+
+    if "testcases_text" not in st.session_state:
+        testcases = read_or_create_json_from_gcs("roleplaydoh", f"data/errors_test.json")
+        # testcases = json.load(open('data/errors_test.json', 'r'))
+        st.session_state["testcases_text"] = testcases
+
+    testcases = st.session_state["testcases_text"]
 
     if get_id():
-        print("global_dict: \n", global_dict)
+
         example_ind = global_dict["current_example_ind"]
 
-# **Motivation**: We are developing Virtual Patient Chatbots. This AI-powered chatbot roleplays as a patient seeking mental health support; we hope this chatbot can help with the education and training of novice therapists.
         with st.sidebar:
             st.markdown(""" # **Annotation Instructions**
-**Case Data**: You have been provided a description of the patient case, and a conversation between the virtual patient and a therapist. 
 
-**Annotation Tips:**
-Rank the patient responses shown based on the set of dimensions provided. 
-
-The same rank can be assigned to multiple responses, if required. For example, if the first and second response are of similar quality, and both are better than the third response, the ranking would look like 
-
-| Response  | Rank |
-| --------- | ---- |
-| ResponseA | 1    |
-| ResponseB | 1    |
-| ResponseC | 2    |
+- You have been provided a conversation between a simulated patient and a therapist, along with a description of the patient's situation and personality, and a set of principles that the patient response should follow.
+- Rank the patient responses shown based on the set of dimensions provided. A lower rank indicates a better response!
+- The same rank can be assigned to multiple responses, if required. For example, if the first and second response are of similar quality, and both are better than the third response, rank 1 should be assigned to the first two responses, and rank 2 should be assigned to the third response.
 
 """)
 
@@ -121,8 +126,8 @@ The same rank can be assigned to multiple responses, if required. For example, i
                 for key in global_dict:
                     st.session_state[key] = global_dict[key]
 
-                st.markdown(f'### **Virtual Patient Response Ranking Tool**')
-                st.info("This is a tool to rank patient responses generated from different AI models along different dimensions. Please read the conversation, patient description and set of principles for the patient to follow below and rank the provided responses along the required dimensions.")
+                st.markdown(f'### **Response Annotation for Roleplaydoh**')
+                st.info("This is a tool to rank patient responses generated from different models along different dimensions. Please read the conversation, patient description and set of principles for the patient to follow below and provide responses in the following sections.")
                 st.subheader(f"Case {example_ind + 1} of {len(global_dict['testcases'])}")
                 example_ind = global_dict["current_example_ind"]
                 testcase = testcases["tests"][global_dict["testcases"][example_ind]]
@@ -169,7 +174,7 @@ The same rank can be assigned to multiple responses, if required. For example, i
                 with st.container():
                     st.markdown(f'### **Dimension 2**')
                     # st.markdown('The response avoids stylistic errors. Such errors may include: starting a sentence with a greeting in the middle of a conversation, or always ending a response with an abbreviation.')
-                    st.markdown('Evaluate whether each response avoids an awkward style of speech. An example of awkward style could be starting a sentence with a greeting in the middle of a conversation.')
+                    st.markdown('Evaluate whether each response has an awkward style of speech. An example of awkward style could be starting a sentence with a greeting in the middle of a conversation.')
 
                     for idx, response in enumerate(responses):
                         col1, col2 = st.columns([4,2])
@@ -186,7 +191,7 @@ The same rank can be assigned to multiple responses, if required. For example, i
 
                 with st.container():
                     st.markdown(f'### **Dimension 3**')
-                    st.markdown('Rank responses based on how well they adhere to all the written principles. If a response violates a principle, the extent to which the principle is violated should not be taken into account while ranking. Models which violate less number of principles should be ranked higher.')
+                    st.markdown('Rank responses based on how well they adhere to all the written principles. If a response violates a principle, the extent to which the principle is violated should not be taken into account while ranking. Models which violate fewer number of principles should be ranked higher.')
 
                     principles_list = f'##### **Principles for Patient Actor to Follow**'
                     for _ in testcase["input"]["principles"]:
@@ -208,7 +213,7 @@ The same rank can be assigned to multiple responses, if required. For example, i
 
                 with st.container():
                     st.markdown(f'### **Overall Ranking**')
-                    st.markdown('Based on your answers for the dimensions above, provide an overall ranking for the responses in the context of the patient description, conversation history and set of principles. If responses do not have significant errors according to dimensions 1 and 2, the overall ranking can be determined on the basis of dimension 3.')
+                    st.markdown('Based on your answers for the dimensions above, provide an overall ranking for the responses in the context of the patient description, conversation history and set of principles. In cases where responses do not have significant errors according to dimensions 1 and 2, the overall ranking can be determined on the basis of dimension 3.')
 
                     for idx, response in enumerate(responses):
                         col1, col2 = st.columns([4,2])
@@ -224,8 +229,8 @@ The same rank can be assigned to multiple responses, if required. For example, i
                                 count_done_feedback += 1
                             
                     count_required_feedback += 1
-                    st.text_area("Please provide a brief explanation for the overall ranking provided above.", key="reason", on_change=update_global_dict, args=[["reason"]], height=200)
-                    if "reason" in st.session_state and st.session_state["reason"]:
+                    st.text_area("Please provide a brief explanation for the overall ranking provided above.", key=f"reason_{example_ind}", on_change=update_global_dict, args=[[f"reason_{example_ind}"]], height=200)
+                    if f"reason_{example_ind}" in st.session_state and st.session_state[f"reason_{example_ind}"]:
                         count_done_feedback += 1
 
                 st.checkbox('I have finished annotating', key=f"finished_{example_ind}", on_change=update_global_dict, args=[[f"finished_{example_ind}"]])
@@ -236,3 +241,4 @@ The same rank can be assigned to multiple responses, if required. For example, i
                     else:
                         st.success('We got your annotations!', icon="✅")
                         st.button("Submit final answers and go to next testcase", type="primary", on_click=example_finished_callback)
+                        st.session_state["reload"] = True

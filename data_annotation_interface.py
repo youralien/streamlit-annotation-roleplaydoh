@@ -36,10 +36,10 @@ def example_finished_callback():
         global_dict[_] = st.session_state[_]
     global_dict["current_example_ind"] += 1
     if "logged_in" in st.session_state and st.session_state["logged_in"]:
-        save_dict_to_gcs(BUCKET_NAME, f"data/{STATE}_{st.session_state['logged_in']}.json", global_dict)
+        save_dict_to_gcs(BUCKET_NAME, f"data/{STATE}_{st.session_state['logged_in']}.json", dict(global_dict))
         # json.dump(dict(global_dict), open(f"data/state_{st.session_state['logged_in']}.json", 'w'))
     else:
-        save_dict_to_gcs(BUCKET_NAME, f"data/{STATE}.json", global_dict)
+        save_dict_to_gcs(BUCKET_NAME, f"data/{STATE}.json", dict(global_dict))
         # json.dump(dict(global_dict), open(f'data/state.json', 'w'))
     js = '''
     <script>

@@ -60,27 +60,36 @@ def get_id():
     if "logged_in" in st.session_state and st.session_state["logged_in"]:
         return True
 
-    col1, col2, col3 = st.columns([2,3,2])
-    with col2:
-        if "pid" in st.session_state and st.session_state["pid"]:
-            st.session_state["logged_in"] = st.session_state["pid"]
-            st.session_state["reload"] = True
-            return True
-        else:
-            st.markdown(f'### Virtual Patient Response Ranking Tool')
-            st.warning("""Before you log in and begin annotating data,
-                        please ensure you have read and fully understood our research information sheet.
-                        :red[**By providing your Email ID, you are providing your informed consent**] to participate in this research project.
-                        If you have any questions or concerns about the research or your role in it,
-                        please reach out to our team before proceeding.""", icon="⚠️")
-            st.text_input("Email ID", key="pid", on_change=update_global_dict, args=[["pid"], "True"])
-            st.session_state["reload"] = True
-            return False
+    with login_placeholder.container():
+        col1, col2, col3 = st.columns([2,3,2])
+        with col2:
+            if "pid" in st.session_state and st.session_state["pid"]:
+                st.session_state["logged_in"] = st.session_state["pid"]
+                st.session_state["reload"] = True
+                return True
+            else:
+                st.markdown(f'### Virtual Patient Response Ranking Tool')
+                st.warning("""Before you log in and begin annotating data,
+                            please ensure you have read and fully understood our research information sheet.
+                            :red[**By providing your Email ID, you are providing your informed consent**] to participate in this research project.
+                            If you have any questions or concerns about the research or your role in it,
+                            please reach out to our team before proceeding.""", icon="⚠️")
+                st.text_input("Email ID", key="pid", on_change=update_global_dict, args=[["pid"], "True"])
+                st.session_state["reload"] = True
+                return False
 
 
 if __name__ == "__main__":
 
     st.set_page_config(layout="wide")
+
+    # Create placeholders for each dynamic section
+    login_placeholder = st.empty()
+    case_input_placeholder = st.empty()
+    dimension_1_placeholder = st.empty()
+    dimension_2_placeholder = st.empty()
+    dimension_3_placeholder = st.empty()
+    overall_ranking_placeholder = st.empty()
 
     if "reload" not in st.session_state or st.session_state["reload"]:
         if "logged_in" in st.session_state and st.session_state["logged_in"]:
@@ -111,10 +120,10 @@ if __name__ == "__main__":
 
         with st.sidebar:
             st.markdown(""" # **Annotation Instructions**
-**Case Data**: You have been provided a description of the patient case, and a conversation between the virtual patient and a therapist. 
+**Case Data**: You have been provided a description of the patient case, and a conversation between the virtual patient and a therapist.
 **Annotation Tips:**
-Rank the patient responses shown based on the set of dimensions provided. 
-The same rank can be assigned to multiple responses, if required. For example, if the first and second response are of similar quality, and both are better than the third response, the ranking would look like 
+Rank the patient responses shown based on the set of dimensions provided.
+The same rank can be assigned to multiple responses, if required. For example, if the first and second response are of similar quality, and both are better than the third response, the ranking would look like
 
 | Response  | Rank |
 | --------- | ---- |
@@ -144,7 +153,7 @@ The same rank can be assigned to multiple responses, if required. For example, i
                 count_required_feedback = 0
                 count_done_feedback = 0
 
-                with st.container():
+                with case_input_placeholder.container():
                     st.markdown(f'### **Description of Patient**')
                     st.markdown(testcase["input"]["description"])
 
@@ -163,7 +172,7 @@ The same rank can be assigned to multiple responses, if required. For example, i
                     # st.markdown(principles_list)
 
                 responses = testcase["responses"]
-                with st.container():
+                with dimension_1_placeholder.container():
                     st.markdown(f'### **Dimension 1**')
                     st.markdown('Rank responses based on how consistent they are to the patient description and conversation history, and if they offer an appropriate reply to the last message from the therapist. All suitably consistent responses should have the same rank.')
 
@@ -180,7 +189,7 @@ The same rank can be assigned to multiple responses, if required. For example, i
                             if key in st.session_state and st.session_state[key] != "None":
                                 count_done_feedback += 1
 
-                with st.container():
+                with dimension_2_placeholder.container():
                     st.markdown(f'### **Dimension 2**')
                     # st.markdown('The response avoids stylistic errors. Such errors may include: starting a sentence with a greeting in the middle of a conversation, or always ending a response with an abbreviation.')
                     st.markdown('Evaluate whether each response has an awkward style of speech. An example of awkward style could be starting a sentence with a greeting in the middle of a conversation.')
@@ -198,7 +207,7 @@ The same rank can be assigned to multiple responses, if required. For example, i
                             if key in st.session_state and st.session_state[key] != "None":
                                 count_done_feedback += 1
 
-                with st.container():
+                with dimension_3_placeholder.container():
                     st.markdown(f'### **Dimension 3**')
                     st.markdown('Rank responses based on how well they adhere to all the written principles. If a response violates a principle, the extent to which the principle is violated should not be taken into account while ranking. Models which violate fewer number of principles should be ranked higher.')
 
@@ -220,7 +229,7 @@ The same rank can be assigned to multiple responses, if required. For example, i
                             if key in st.session_state and st.session_state[key] != "None":
                                 count_done_feedback += 1
 
-                with st.container():
+                with overall_ranking_placeholder.container():
                     st.markdown(f'### **Overall Ranking**')
                     st.markdown('Based on your answers for the dimensions above, provide an overall ranking for the responses in the context of the patient description, conversation history and set of principles. In cases where responses do not have significant errors according to dimensions 1 and 2, the overall ranking can be determined on the basis of dimension 3.')
 
@@ -236,7 +245,7 @@ The same rank can be assigned to multiple responses, if required. For example, i
                             st.selectbox(label="Rank", options=["None"] + [str(_+1) for _ in list(range(len(responses)))], on_change = update_global_dict, args=[[key]], key=key)
                             if key in st.session_state and st.session_state[key] != "None":
                                 count_done_feedback += 1
-                            
+
                     count_required_feedback += 1
                     st.text_area("Please provide a brief explanation for the overall ranking provided above.", key=f"reason_{example_ind}", on_change=update_global_dict, args=[[f"reason_{example_ind}"]], height=200)
                     if f"reason_{example_ind}" in st.session_state and st.session_state[f"reason_{example_ind}"]:

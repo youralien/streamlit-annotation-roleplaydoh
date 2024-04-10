@@ -9,7 +9,8 @@ EXAMPLES = st.secrets.filenames["example_file"]
 
 def update_global_dict(keys, dump = False):
     for key in keys:
-        global_dict[key] = st.session_state[key]
+        if key in st.session_state:
+            global_dict[key] = st.session_state[key]
 
     if not dump:
         return
@@ -121,6 +122,7 @@ if __name__ == "__main__":
         with st.sidebar:
             st.markdown(""" # **Annotation Instructions**
 **Case Data**: You have been provided a description of the patient case, and a conversation between the virtual patient and a therapist.
+
 **Annotation Tips:**
 Rank the patient responses shown based on the set of dimensions provided.
 The same rank can be assigned to multiple responses, if required. For example, if the first and second response are of similar quality, and both are better than the third response, the ranking would look like

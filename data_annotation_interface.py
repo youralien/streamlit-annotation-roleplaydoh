@@ -187,7 +187,7 @@ The same rank can be assigned to multiple responses, if required. For example, i
 
                         with col2:
                             key = f'{example_ind}_1_{idx}'
-                            st.selectbox(label="Rank", options=["None"] + [str(_+1) for _ in list(range(len(responses)))], on_change = update_global_dict, args=[[key]], key=key)
+                            st.selectbox(label="Rank", options=["None"] + [str(_+1) for _ in list(range(len(responses)))], key=key)
                             if key in st.session_state and st.session_state[key] != "None":
                                 count_done_feedback += 1
 
@@ -205,7 +205,7 @@ The same rank can be assigned to multiple responses, if required. For example, i
 
                         with col2:
                             key = f'{example_ind}_2_{idx}'
-                            st.selectbox(label="Is this response awkward?", options=["None", "Yes", "No"], on_change = update_global_dict, args=[[key]], key=key)
+                            st.selectbox(label="Is this response awkward?", options=["None", "Yes", "No"], key=key)
                             if key in st.session_state and st.session_state[key] != "None":
                                 count_done_feedback += 1
 
@@ -227,7 +227,7 @@ The same rank can be assigned to multiple responses, if required. For example, i
 
                         with col2:
                             key = f'{example_ind}_3_{idx}'
-                            st.selectbox(label="Rank", options=["None"] + [str(_+1) for _ in list(range(len(responses)))], on_change = update_global_dict, args=[[key]], key=key)
+                            st.selectbox(label="Rank", options=["None"] + [str(_+1) for _ in list(range(len(responses)))], key=key)
                             if key in st.session_state and st.session_state[key] != "None":
                                 count_done_feedback += 1
 
@@ -244,16 +244,16 @@ The same rank can be assigned to multiple responses, if required. For example, i
 
                         with col2:
                             key = f'{example_ind}_4_{idx}'
-                            st.selectbox(label="Rank", options=["None"] + [str(_+1) for _ in list(range(len(responses)))], on_change = update_global_dict, args=[[key]], key=key)
+                            st.selectbox(label="Rank", options=["None"] + [str(_+1) for _ in list(range(len(responses)))], key=key)
                             if key in st.session_state and st.session_state[key] != "None":
                                 count_done_feedback += 1
 
                     count_required_feedback += 1
-                    st.text_area("Please provide a brief explanation for the overall ranking provided above.", key=f"reason_{example_ind}", on_change=update_global_dict, args=[[f"reason_{example_ind}"]], height=200)
+                    st.text_area("Please provide a brief explanation for the overall ranking provided above.", key=f"reason_{example_ind}", height=200)
                     if f"reason_{example_ind}" in st.session_state and st.session_state[f"reason_{example_ind}"]:
                         count_done_feedback += 1
 
-                st.checkbox('I have finished annotating', key=f"finished_{example_ind}", on_change=update_global_dict, args=[[f"finished_{example_ind}"]])
+                st.checkbox('I have finished annotating', key=f"finished_{example_ind}")
 
                 if f"finished_{example_ind}" in st.session_state and st.session_state[f"finished_{example_ind}"]:
                     if count_done_feedback != count_required_feedback:

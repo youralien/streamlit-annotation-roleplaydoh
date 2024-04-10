@@ -3,6 +3,10 @@ import json
 from data_utils import *
 import os
 
+BUCKET_NAME = st.secrets.filenames["bucket_name"]
+STATE = st.secrets.filenames["state_file"]
+EXAMPLES = st.secrets.filenames["example_file"]
+
 def update_global_dict(keys, dump = False):
     for key in keys:
         global_dict[key] = st.session_state[key]
@@ -12,19 +16,19 @@ def update_global_dict(keys, dump = False):
 
     if "logged_in" in st.session_state and st.session_state["logged_in"]:
         # json.dump(global_dict, open(f"data/state_{st.session_state['logged_in']}.json", 'w'))
-        save_dict_to_gcs("roleplaydoh", f"data/state_{st.session_state['logged_in']}.json", global_dict)
+        save_dict_to_gcs(BUCKET_NAME, f"data/{STATE}_{st.session_state['logged_in']}.json", global_dict)
     elif "pid" in st.session_state and st.session_state["pid"]:
         client = get_gc_client()
         bucket = client.get_bucket("roleplaydoh")
-        if storage.Blob(bucket=bucket, name=f"data/state_{st.session_state['pid']}.json").exists(client):
+        if storage.Blob(bucket=bucket, name=f"data/{STATE}_{st.session_state['pid']}.json").exists(client):
         # if os.path.exists(f"data/state_{st.session_state['pid']}.json"):
             # load
             return
         else:
             # json.dump(global_dict, open(f"data/state_{st.session_state['pid']}.json", 'w'))
-            save_dict_to_gcs("roleplaydoh", f"data/state_{st.session_state['pid']}.json", global_dict)
+             save_dict_to_gcs(BUCKET_NAME, f"data/{STATE}_{st.session_state['pid']}.json", global_dict)
     else:
-        save_dict_to_gcs("roleplaydoh", f"data/state.json", global_dict)
+        save_dict_to_gcs(BUCKET_NAME, f"data/{STATE}.json", global_dict)
         # json.dump(global_dict, open(f'data/state.json', 'w'))
 
 def example_finished_callback():
@@ -32,10 +36,10 @@ def example_finished_callback():
         global_dict[_] = st.session_state[_]
     global_dict["current_example_ind"] += 1
     if "logged_in" in st.session_state and st.session_state["logged_in"]:
-        save_dict_to_gcs("roleplaydoh", f"data/state_{st.session_state['logged_in']}.json", global_dict)
+        save_dict_to_gcs(BUCKET_NAME, f"data/{STATE}_{st.session_state['logged_in']}.json", global_dict)
         # json.dump(dict(global_dict), open(f"data/state_{st.session_state['logged_in']}.json", 'w'))
     else:
-        save_dict_to_gcs("roleplaydoh", f"data/state.json", global_dict)
+        save_dict_to_gcs(BUCKET_NAME, f"data/{STATE}.json", global_dict)
         # json.dump(dict(global_dict), open(f'data/state.json', 'w'))
     js = '''
     <script>
@@ -80,13 +84,13 @@ if __name__ == "__main__":
 
     if "reload" not in st.session_state or st.session_state["reload"]:
         if "logged_in" in st.session_state and st.session_state["logged_in"]:
-            global_dict = read_or_create_json_from_gcs("roleplaydoh", f"data/state_{st.session_state['logged_in']}.json")
+            global_dict = read_or_create_json_from_gcs(BUCKET_NAME, f"data/{STATE}_{st.session_state['logged_in']}.json")
             # global_dict = json.load(open(f"data/state_{st.session_state['logged_in']}.json", 'r'))
         elif "pid" in st.session_state and st.session_state["pid"]:
-            global_dict = read_or_create_json_from_gcs("roleplaydoh", f"data/state_{st.session_state['pid']}.json")
+            global_dict = read_or_create_json_from_gcs(BUCKET_NAME, f"data/{STATE}_{st.session_state['pid']}.json")
             # global_dict = json.load(open(f"data/state_{st.session_state['pid']}.json", 'r'))
         else:
-            global_dict = read_or_create_json_from_gcs("roleplaydoh", f"data/state.json")
+            global_dict = read_or_create_json_from_gcs(BUCKET_NAME, f"data/{STATE}.json")
             # global_dict = json.load(open(f'data/state.json', 'r'))
         st.session_state["reload"] = False
         st.session_state["testcases"] = global_dict["testcases"]
@@ -95,7 +99,7 @@ if __name__ == "__main__":
         global_dict = st.session_state
 
     if "testcases_text" not in st.session_state:
-        testcases = read_or_create_json_from_gcs("roleplaydoh", f"data/errors_test.json")
+        testcases = read_or_create_json_from_gcs(BUCKET_NAME, f"data/{EXAMPLES}.json")
         # testcases = json.load(open('data/errors_test.json', 'r'))
         st.session_state["testcases_text"] = testcases
 

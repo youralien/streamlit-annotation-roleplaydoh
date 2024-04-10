@@ -86,6 +86,7 @@ if __name__ == "__main__":
 
     # Create placeholders for each dynamic section
     login_placeholder = st.empty()
+    main_instructions_placeholder = st.empty()
     case_input_placeholder = st.empty()
     dimension_1_placeholder = st.empty()
     dimension_2_placeholder = st.empty()
@@ -146,9 +147,11 @@ The same rank can be assigned to multiple responses, if required. For example, i
                 for key in global_dict:
                     st.session_state[key] = global_dict[key]
 
-                st.markdown(f'### **Virtual Patient Response Ranking Tool**')
-                st.info("This is a tool to rank patient responses generated from different AI models along different dimensions. Please read the conversation, patient description and set of principles for the patient to follow below and provide responses in the following sections.")
-                st.subheader(f"Case {example_ind + 1} of {len(global_dict['testcases'])}")
+                with main_instructions_placeholder.container():
+                    st.markdown(f'### **Virtual Patient Response Ranking Tool**')
+                    st.info("This is a tool to rank patient responses generated from different AI models along different dimensions. Please read the conversation, patient description and set of principles for the patient to follow below and provide responses in the following sections.")
+                    st.subheader(f"Case {example_ind + 1} of {len(global_dict['testcases'])}")
+
                 example_ind = global_dict["current_example_ind"]
                 testcase = testcases["tests"][global_dict["testcases"][example_ind]]
 

@@ -67,7 +67,7 @@ def get_id():
             st.session_state["reload"] = True
             return True
         else:
-            st.markdown(f'### A Conversational Tool for Training Peer Counselors')
+            st.markdown(f'### Virtual Patient Response Ranking Tool')
             st.warning("""Before you log in and begin annotating data,
                         please ensure you have read and fully understood our research information sheet.
                         :red[**By providing your Email ID, you are providing your informed consent**] to participate in this research project.
@@ -111,11 +111,16 @@ if __name__ == "__main__":
 
         with st.sidebar:
             st.markdown(""" # **Annotation Instructions**
+**Case Data**: You have been provided a description of the patient case, and a conversation between the virtual patient and a therapist. 
+**Annotation Tips:**
+Rank the patient responses shown based on the set of dimensions provided. 
+The same rank can be assigned to multiple responses, if required. For example, if the first and second response are of similar quality, and both are better than the third response, the ranking would look like 
 
-- You have been provided a conversation between a simulated patient and a therapist, along with a description of the patient's situation and personality, and a set of principles that the patient response should follow.
-- Rank the patient responses shown based on the set of dimensions provided. A lower rank indicates a better response!
-- The same rank can be assigned to multiple responses, if required. For example, if the first and second response are of similar quality, and both are better than the third response, rank 1 should be assigned to the first two responses, and rank 2 should be assigned to the third response.
-
+| Response  | Rank |
+| --------- | ---- |
+| ResponseA | 1    |
+| ResponseB | 1    |
+| ResponseC | 2    |
 """)
 
         c1, c2, c3 = st.columns([1,5,1])
@@ -130,8 +135,8 @@ if __name__ == "__main__":
                 for key in global_dict:
                     st.session_state[key] = global_dict[key]
 
-                st.markdown(f'### **Response Annotation for Roleplaydoh**')
-                st.info("This is a tool to rank patient responses generated from different models along different dimensions. Please read the conversation, patient description and set of principles for the patient to follow below and provide responses in the following sections.")
+                st.markdown(f'### **Virtual Patient Response Ranking Tool**')
+                st.info("This is a tool to rank patient responses generated from different AI models along different dimensions. Please read the conversation, patient description and set of principles for the patient to follow below and provide responses in the following sections.")
                 st.subheader(f"Case {example_ind + 1} of {len(global_dict['testcases'])}")
                 example_ind = global_dict["current_example_ind"]
                 testcase = testcases["tests"][global_dict["testcases"][example_ind]]

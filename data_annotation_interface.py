@@ -216,11 +216,16 @@ The same rank can be assigned to multiple responses, if required. For example, i
 
                     with dimension_3_placeholder.container():
                         st.markdown(f'### **Dimension 3**')
-                        st.markdown('Rank responses based on how well they adhere to all the written principles. If a response violates a principle, the extent to which the principle is violated should not be taken into account while ranking. Models which violate fewer number of principles should be ranked higher.')
+                        st.markdown("""Rank responses based on how well they adhere to all the written principles.
+
+* Responses that violate fewer principles should be ranked higher.
+* Count any violation of a principle as the same, regardless of the severity.
+* ⚠️ *Do not* evaluate responses based on *your internal-set of principles*.  Please only evaluate based on principles that are written
+""")
 
                         principles_list = f'##### **Principles for Patient Actor to Follow**'
-                        for _ in testcase["input"]["principles"]:
-                            principles_list += f'\n- {_}'
+                        for i, principle in enumerate(testcase["input"]["principles"]):
+                            principles_list += f'\n{i+1}. {principle}'
                         st.markdown(principles_list)
 
                         for idx, response in enumerate(responses):

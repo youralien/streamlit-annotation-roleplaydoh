@@ -19,7 +19,7 @@ def update_global_dict(keys, dump = False):
         save_dict_to_gcs(BUCKET_NAME, f"data/{STATE}_{st.session_state['logged_in']}.json", global_dict)
     elif "pid" in st.session_state and st.session_state["pid"]:
         client = get_gc_client()
-        bucket = client.get_bucket("roleplaydoh")
+        bucket = client.get_bucket(BUCKET_NAME)
         if storage.Blob(bucket=bucket, name=f"data/{STATE}_{st.session_state['pid']}.json").exists(client):
         # if os.path.exists(f"data/state_{st.session_state['pid']}.json"):
             # load

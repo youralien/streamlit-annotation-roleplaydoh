@@ -70,7 +70,7 @@ def get_id():
                 st.session_state["reload"] = True
                 return True
             else:
-                st.markdown(f'### Virtual Patient Response Ranking Tool')
+                st.markdown(f'### Virtual Patient Response Ranking Tool - Test Set C')
                 st.warning("""Before you log in and begin annotating data,
                             please ensure you have read and fully understood our research information sheet.
                             :red[**By providing your Email ID, you are providing your informed consent**] to participate in this research project.
@@ -152,7 +152,7 @@ The same rank can be assigned to multiple responses, if required. For example, i
                         st.session_state[key] = global_dict[key]
 
                     with main_instructions_placeholder.container():
-                        st.markdown(f'### **Virtual Patient Response Ranking Tool**')
+                        st.markdown(f'### **Virtual Patient Response Ranking Tool - Test Set C**')
                         st.info("This is a tool to rank patient responses generated from different AI models along different dimensions. Please read the conversation, patient description and set of principles for the patient to follow below and provide responses in the following sections.")
                         st.subheader(f"Case {example_ind + 1} of {len(global_dict['testcases'])}")
 

@@ -93,6 +93,7 @@ if __name__ == "__main__":
     dimension_2_placeholder = st.empty()
     dimension_3_placeholder = st.empty()
     overall_ranking_placeholder = st.empty()
+    prepare_submit_placeholder = st.empty()
 
     if "reload" not in st.session_state or st.session_state["reload"]:
         if "logged_in" in st.session_state and st.session_state["logged_in"]:
@@ -257,12 +258,13 @@ The same rank can be assigned to multiple responses, if required. For example, i
                         if f"reason_{example_ind}" in st.session_state and st.session_state[f"reason_{example_ind}"]:
                             count_done_feedback += 1
 
-                    st.checkbox('I have finished annotating', key=f"finished_{example_ind}")
+                    with prepare_submit_placeholder.container():
+                        st.checkbox('I have finished annotating', key=f"finished_{example_ind}")
 
-                    if f"finished_{example_ind}" in st.session_state and st.session_state[f"finished_{example_ind}"]:
-                        if count_done_feedback != count_required_feedback:
-                            st.error('Some annotations seem to be missing. Please annotate the full conversation', icon="❌")
-                        else:
-                            st.success('We got your annotations!', icon="✅")
-                            st.button("Submit final answers and go to next testcase", type="primary", on_click=example_finished_callback)
-                            st.session_state["reload"] = True
+                        if f"finished_{example_ind}" in st.session_state and st.session_state[f"finished_{example_ind}"]:
+                            if count_done_feedback != count_required_feedback:
+                                st.error('Some annotations seem to be missing. Please annotate the full conversation', icon="❌")
+                            else:
+                                st.success('We got your annotations!', icon="✅")
+                                st.button("Submit final answers and go to next testcase", type="primary", on_click=example_finished_callback)
+                                st.session_state["reload"] = True

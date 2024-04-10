@@ -51,7 +51,8 @@ def example_finished_callback():
         setTimeout(scrollToTop, 300);  // 300 milliseconds delay
     </script>
     '''
-    st.components.v1.html(js)
+    with callback_placeholder.container():
+        st.components.v1.html(js)
 
 
 
@@ -94,6 +95,7 @@ if __name__ == "__main__":
     dimension_3_placeholder = st.empty()
     overall_ranking_placeholder = st.empty()
     prepare_submit_placeholder = st.empty()
+    callback_placeholder = st.empty()
 
     if "reload" not in st.session_state or st.session_state["reload"]:
         if "logged_in" in st.session_state and st.session_state["logged_in"]:

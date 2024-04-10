@@ -86,6 +86,7 @@ if __name__ == "__main__":
 
     # Create placeholders for each dynamic section
     login_placeholder = st.empty()
+    main_content_placeholder = st.empty()
     main_instructions_placeholder = st.empty()
     case_input_placeholder = st.empty()
     dimension_1_placeholder = st.empty()
@@ -117,11 +118,11 @@ if __name__ == "__main__":
     testcases = st.session_state["testcases_text"]
 
     if get_id():
+        with main_content_placeholder.container():
+            example_ind = global_dict["current_example_ind"]
 
-        example_ind = global_dict["current_example_ind"]
-
-        with st.sidebar:
-            st.markdown(""" # **Annotation Instructions**
+            with st.sidebar:
+                st.markdown(""" # **Annotation Instructions**
 **Case Data**: You have been provided a description of the patient case, and a conversation between the virtual patient and a therapist.
 
 **Annotation Tips:**
@@ -130,138 +131,138 @@ The same rank can be assigned to multiple responses, if required. For example, i
 
 | Response  | Rank |
 | --------- | ---- |
-| ResponseA | 1    |
-| ResponseB | 1    |
-| ResponseC | 2    |
+| ResponseX | 1    |
+| ResponseY | 1    |
+| ResponseZ | 2    |
 """)
 
-        c1, c2, c3 = st.columns([1,5,1])
-        with c2:
-            if example_ind >= len(global_dict["testcases"]):
-                st.title("Thank you!")
-                st.balloons()
-                st.success("You have annotated all the examples! 🎉")
+            c1, c2, c3 = st.columns([1,5,1])
+            with c2:
+                if example_ind >= len(global_dict["testcases"]):
+                    st.title("Thank you!")
+                    st.balloons()
+                    st.success("You have annotated all the examples! 🎉")
 
-            else:
+                else:
 
-                for key in global_dict:
-                    st.session_state[key] = global_dict[key]
+                    for key in global_dict:
+                        st.session_state[key] = global_dict[key]
 
-                with main_instructions_placeholder.container():
-                    st.markdown(f'### **Virtual Patient Response Ranking Tool**')
-                    st.info("This is a tool to rank patient responses generated from different AI models along different dimensions. Please read the conversation, patient description and set of principles for the patient to follow below and provide responses in the following sections.")
-                    st.subheader(f"Case {example_ind + 1} of {len(global_dict['testcases'])}")
+                    with main_instructions_placeholder.container():
+                        st.markdown(f'### **Virtual Patient Response Ranking Tool**')
+                        st.info("This is a tool to rank patient responses generated from different AI models along different dimensions. Please read the conversation, patient description and set of principles for the patient to follow below and provide responses in the following sections.")
+                        st.subheader(f"Case {example_ind + 1} of {len(global_dict['testcases'])}")
 
-                example_ind = global_dict["current_example_ind"]
-                testcase = testcases["tests"][global_dict["testcases"][example_ind]]
+                    example_ind = global_dict["current_example_ind"]
+                    testcase = testcases["tests"][global_dict["testcases"][example_ind]]
 
-                count_required_feedback = 0
-                count_done_feedback = 0
+                    count_required_feedback = 0
+                    count_done_feedback = 0
 
-                with case_input_placeholder.container():
-                    st.markdown(f'### **Description of Patient**')
-                    st.markdown(testcase["input"]["description"])
+                    with case_input_placeholder.container():
+                        st.markdown(f'### **Description of Patient**')
+                        st.markdown(testcase["input"]["description"])
 
-                    conv = testcase["input"]["messages"]
-                    st.markdown(f'### **Conversation History**')
-                    for i in range(len(conv)):
-                        to_print = f"**{conv[i]['role']}** : {conv[i]['content']}"
-                        if conv[i]["role"] == 'therapist':
-                            st.markdown(f':blue[{to_print}]')
+                        conv = testcase["input"]["messages"]
+                        st.markdown(f'### **Conversation History**')
+                        for i in range(len(conv)):
+                            to_print = f"**{conv[i]['role']}** : {conv[i]['content']}"
+                            if conv[i]["role"] == 'therapist':
+                                st.markdown(f':blue[{to_print}]')
+                            else:
+                                st.markdown(f':red[{to_print}]')
+
+                        # principles_list = f'### **Principles**'
+                        # for _ in testcase["input"]["principles"]:
+                        #     principles_list += f'\n- {_}'
+                        # st.markdown(principles_list)
+
+                    responses = testcase["responses"]
+                    with dimension_1_placeholder.container():
+                        st.markdown(f'### **Dimension 1**')
+                        st.markdown('Rank responses based on how consistent they are to the patient description and conversation history, and if they offer an appropriate reply to the last message from the therapist. All suitably consistent responses should have the same rank.')
+
+                        for idx, response in enumerate(responses):
+                            col1, col2 = st.columns([4,2])
+                            with col1:
+                                to_print = f"**patient** : {response['message']}"
+                                st.markdown(f':red[{to_print}]')
+                                count_required_feedback += 1
+
+                            with col2:
+                                key = f'{example_ind}_1_{idx}'
+                                st.selectbox(label="Rank", options=["None"] + [str(_+1) for _ in list(range(len(responses)))], key=key)
+                                if key in st.session_state and st.session_state[key] != "None":
+                                    count_done_feedback += 1
+
+                    with dimension_2_placeholder.container():
+                        st.markdown(f'### **Dimension 2**')
+                        # st.markdown('The response avoids stylistic errors. Such errors may include: starting a sentence with a greeting in the middle of a conversation, or always ending a response with an abbreviation.')
+                        st.markdown('Evaluate whether each response has an awkward style of speech. An example of awkward style could be starting a sentence with a greeting in the middle of a conversation.')
+
+                        for idx, response in enumerate(responses):
+                            col1, col2 = st.columns([4,2])
+                            with col1:
+                                to_print = f"**patient** : {response['message']}"
+                                st.markdown(f':red[{to_print}]')
+                                count_required_feedback += 1
+
+                            with col2:
+                                key = f'{example_ind}_2_{idx}'
+                                st.selectbox(label="Is this response awkward?", options=["None", "Yes", "No"], key=key)
+                                if key in st.session_state and st.session_state[key] != "None":
+                                    count_done_feedback += 1
+
+                    with dimension_3_placeholder.container():
+                        st.markdown(f'### **Dimension 3**')
+                        st.markdown('Rank responses based on how well they adhere to all the written principles. If a response violates a principle, the extent to which the principle is violated should not be taken into account while ranking. Models which violate fewer number of principles should be ranked higher.')
+
+                        principles_list = f'##### **Principles for Patient Actor to Follow**'
+                        for _ in testcase["input"]["principles"]:
+                            principles_list += f'\n- {_}'
+                        st.markdown(principles_list)
+
+                        for idx, response in enumerate(responses):
+                            col1, col2 = st.columns([4,2])
+                            with col1:
+                                to_print = f"**patient** : {response['message']}"
+                                st.markdown(f':red[{to_print}]')
+                                count_required_feedback += 1
+
+                            with col2:
+                                key = f'{example_ind}_3_{idx}'
+                                st.selectbox(label="Rank", options=["None"] + [str(_+1) for _ in list(range(len(responses)))], key=key)
+                                if key in st.session_state and st.session_state[key] != "None":
+                                    count_done_feedback += 1
+
+                    with overall_ranking_placeholder.container():
+                        st.markdown(f'### **Overall Ranking**')
+                        st.markdown('Based on your answers for the dimensions above, provide an overall ranking for the responses in the context of the patient description, conversation history and set of principles. In cases where responses do not have significant errors according to dimensions 1 and 2, the overall ranking can be determined on the basis of dimension 3.')
+
+                        for idx, response in enumerate(responses):
+                            col1, col2 = st.columns([4,2])
+                            with col1:
+                                to_print = f"**patient** : {response['message']}"
+                                st.markdown(f':red[{to_print}]')
+                                count_required_feedback += 1
+
+                            with col2:
+                                key = f'{example_ind}_4_{idx}'
+                                st.selectbox(label="Rank", options=["None"] + [str(_+1) for _ in list(range(len(responses)))], key=key)
+                                if key in st.session_state and st.session_state[key] != "None":
+                                    count_done_feedback += 1
+
+                        count_required_feedback += 1
+                        st.text_area("Please provide a brief explanation for the overall ranking provided above.", key=f"reason_{example_ind}", height=200)
+                        if f"reason_{example_ind}" in st.session_state and st.session_state[f"reason_{example_ind}"]:
+                            count_done_feedback += 1
+
+                    st.checkbox('I have finished annotating', key=f"finished_{example_ind}")
+
+                    if f"finished_{example_ind}" in st.session_state and st.session_state[f"finished_{example_ind}"]:
+                        if count_done_feedback != count_required_feedback:
+                            st.error('Some annotations seem to be missing. Please annotate the full conversation', icon="❌")
                         else:
-                            st.markdown(f':red[{to_print}]')
-
-                    # principles_list = f'### **Principles**'
-                    # for _ in testcase["input"]["principles"]:
-                    #     principles_list += f'\n- {_}'
-                    # st.markdown(principles_list)
-
-                responses = testcase["responses"]
-                with dimension_1_placeholder.container():
-                    st.markdown(f'### **Dimension 1**')
-                    st.markdown('Rank responses based on how consistent they are to the patient description and conversation history, and if they offer an appropriate reply to the last message from the therapist. All suitably consistent responses should have the same rank.')
-
-                    for idx, response in enumerate(responses):
-                        col1, col2 = st.columns([4,2])
-                        with col1:
-                            to_print = f"**patient** : {response['message']}"
-                            st.markdown(f':red[{to_print}]')
-                            count_required_feedback += 1
-
-                        with col2:
-                            key = f'{example_ind}_1_{idx}'
-                            st.selectbox(label="Rank", options=["None"] + [str(_+1) for _ in list(range(len(responses)))], key=key)
-                            if key in st.session_state and st.session_state[key] != "None":
-                                count_done_feedback += 1
-
-                with dimension_2_placeholder.container():
-                    st.markdown(f'### **Dimension 2**')
-                    # st.markdown('The response avoids stylistic errors. Such errors may include: starting a sentence with a greeting in the middle of a conversation, or always ending a response with an abbreviation.')
-                    st.markdown('Evaluate whether each response has an awkward style of speech. An example of awkward style could be starting a sentence with a greeting in the middle of a conversation.')
-
-                    for idx, response in enumerate(responses):
-                        col1, col2 = st.columns([4,2])
-                        with col1:
-                            to_print = f"**patient** : {response['message']}"
-                            st.markdown(f':red[{to_print}]')
-                            count_required_feedback += 1
-
-                        with col2:
-                            key = f'{example_ind}_2_{idx}'
-                            st.selectbox(label="Is this response awkward?", options=["None", "Yes", "No"], key=key)
-                            if key in st.session_state and st.session_state[key] != "None":
-                                count_done_feedback += 1
-
-                with dimension_3_placeholder.container():
-                    st.markdown(f'### **Dimension 3**')
-                    st.markdown('Rank responses based on how well they adhere to all the written principles. If a response violates a principle, the extent to which the principle is violated should not be taken into account while ranking. Models which violate fewer number of principles should be ranked higher.')
-
-                    principles_list = f'##### **Principles for Patient Actor to Follow**'
-                    for _ in testcase["input"]["principles"]:
-                        principles_list += f'\n- {_}'
-                    st.markdown(principles_list)
-
-                    for idx, response in enumerate(responses):
-                        col1, col2 = st.columns([4,2])
-                        with col1:
-                            to_print = f"**patient** : {response['message']}"
-                            st.markdown(f':red[{to_print}]')
-                            count_required_feedback += 1
-
-                        with col2:
-                            key = f'{example_ind}_3_{idx}'
-                            st.selectbox(label="Rank", options=["None"] + [str(_+1) for _ in list(range(len(responses)))], key=key)
-                            if key in st.session_state and st.session_state[key] != "None":
-                                count_done_feedback += 1
-
-                with overall_ranking_placeholder.container():
-                    st.markdown(f'### **Overall Ranking**')
-                    st.markdown('Based on your answers for the dimensions above, provide an overall ranking for the responses in the context of the patient description, conversation history and set of principles. In cases where responses do not have significant errors according to dimensions 1 and 2, the overall ranking can be determined on the basis of dimension 3.')
-
-                    for idx, response in enumerate(responses):
-                        col1, col2 = st.columns([4,2])
-                        with col1:
-                            to_print = f"**patient** : {response['message']}"
-                            st.markdown(f':red[{to_print}]')
-                            count_required_feedback += 1
-
-                        with col2:
-                            key = f'{example_ind}_4_{idx}'
-                            st.selectbox(label="Rank", options=["None"] + [str(_+1) for _ in list(range(len(responses)))], key=key)
-                            if key in st.session_state and st.session_state[key] != "None":
-                                count_done_feedback += 1
-
-                    count_required_feedback += 1
-                    st.text_area("Please provide a brief explanation for the overall ranking provided above.", key=f"reason_{example_ind}", height=200)
-                    if f"reason_{example_ind}" in st.session_state and st.session_state[f"reason_{example_ind}"]:
-                        count_done_feedback += 1
-
-                st.checkbox('I have finished annotating', key=f"finished_{example_ind}")
-
-                if f"finished_{example_ind}" in st.session_state and st.session_state[f"finished_{example_ind}"]:
-                    if count_done_feedback != count_required_feedback:
-                        st.error('Some annotations seem to be missing. Please annotate the full conversation', icon="❌")
-                    else:
-                        st.success('We got your annotations!', icon="✅")
-                        st.button("Submit final answers and go to next testcase", type="primary", on_click=example_finished_callback)
-                        st.session_state["reload"] = True
+                            st.success('We got your annotations!', icon="✅")
+                            st.button("Submit final answers and go to next testcase", type="primary", on_click=example_finished_callback)
+                            st.session_state["reload"] = True

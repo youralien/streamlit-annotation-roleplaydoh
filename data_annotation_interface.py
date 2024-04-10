@@ -129,7 +129,7 @@ if __name__ == "__main__":
 **Case Data**: You have been provided a description of the patient case, and a conversation between the virtual patient and a therapist.
 
 **Annotation Tips:**
-Rank the patient responses shown based on the set of dimensions provided.
+Rank the patient responses shown based on the set of dimensions provided, from 1 (best) to 5 (worst).
 The same rank can be assigned to multiple responses, if required. For example, if the first and second response are of similar quality, and both are better than the third response, the ranking would look like
 
 | Response  | Rank |
@@ -183,7 +183,7 @@ The same rank can be assigned to multiple responses, if required. For example, i
                     responses = testcase["responses"]
                     with dimension_1_placeholder.container():
                         st.markdown(f'### **Dimension 1**')
-                        st.markdown('Rank responses based on how consistent they are to the patient description and conversation history, and if they offer an appropriate reply to the last message from the therapist. All suitably consistent responses should have the same rank.')
+                        st.markdown('Rank responses (1=best, 5=worst) based on how consistent they are to the patient description and conversation history, and if they offer an appropriate reply to the last message from the therapist. All suitably consistent responses should have the same rank.')
 
                         for idx, response in enumerate(responses):
                             col1, col2 = st.columns([4,2])
@@ -218,7 +218,7 @@ The same rank can be assigned to multiple responses, if required. For example, i
 
                     with dimension_3_placeholder.container():
                         st.markdown(f'### **Dimension 3**')
-                        st.markdown("""Rank responses based on how well they adhere to all the written principles.
+                        st.markdown("""Rank responses (1=best, 5=worst) based on how well they adhere to all the written principles.
 
 * Responses that violate fewer principles should be ranked higher.
 * Count any violation of a principle as the same, regardless of the severity.
@@ -245,7 +245,7 @@ The same rank can be assigned to multiple responses, if required. For example, i
 
                     with overall_ranking_placeholder.container():
                         st.markdown(f'### **Overall Ranking**')
-                        st.markdown('Based on your answers for the dimensions above, provide an overall ranking for the responses in the context of the patient description, conversation history and set of principles. In cases where responses do not have significant errors according to dimensions 1 and 2, the overall ranking can be determined on the basis of dimension 3.')
+                        st.markdown('Based on your answers for the dimensions above, provide an overall ranking (1=best, 5=worst) for the responses in the context of the patient description, conversation history and set of principles. In cases where responses do not have significant errors according to dimensions 1 and 2, the overall ranking can be determined on the basis of dimension 3. ')
 
                         for idx, response in enumerate(responses):
                             col1, col2 = st.columns([4,2])
